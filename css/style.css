@@ -97,12 +97,12 @@ button {
     border: 1px solid black;
 }
 .color-picker-cursor {
-    cursor: url('/images/Color-Dropper.png') 0 24, crosshair;
+    cursor: url('../images/color-dropper.png') 0 24, crosshair;
 }
 .mode-active {
     background-color: #4CAF50;
     color: white;
 }
 .swatch-active {
-    cursor: url('/images/Color-Dropper.png') 0 24, crosshair;
+    cursor: url('../images/color-dropper.png') 0 24, crosshair;
 }
