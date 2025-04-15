@@ -50,7 +50,7 @@ function handleSwatchClick(e) {
     
     imageContainer.style.cursor = 'none';
     setTimeout(() => {
-        imageContainer.style.cursor = 'url("../images/Color-Dropper.png") 0 24, crosshair';
+        imageContainer.style.cursor = 'url("/images/Color-Dropper.png") 0 24, crosshair';
     }, 50);
     
     toggleSelectionBtn.classList.remove('mode-active');
@@ -109,7 +109,7 @@ function toggleColorPicker() {
         toggleSelectionBtn.classList.remove('mode-active');
         imageContainer.style.cursor = 'none';
         setTimeout(() => {
-            imageContainer.style.cursor = 'url("../images/Color-Dropper.png") 0 24, crosshair';
+            imageContainer.style.cursor = 'url("/images/Color-Dropper.png") 0 24, crosshair';
         }, 50);
     } else {
         toggleColorPickerBtn.textContent = 'Enable Color Picker';
