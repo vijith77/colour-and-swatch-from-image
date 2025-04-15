@@ -9,11 +9,11 @@ body {
 }
 .image-container {
     position: relative;
-    width: 400px;
+    width: 600px;
     cursor: default;
 }
 .image-container img {
-    width: 400px;
+    width: 600px;
     height: 530px;
     display: block;
 }
