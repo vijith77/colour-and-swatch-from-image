@@ -1,205 +1,196 @@
-// DOM Elements
+// =========================
+// DOM ELEMENTS
+// =========================
 const imageContainer = document.getElementById('imageContainer');
 const image = document.getElementById('image');
 const selectionBox = document.getElementById('selectionBox');
+
 const toggleSelectionBtn = document.getElementById('toggleSelection');
 const toggleColorPickerBtn = document.getElementById('toggleColorPicker');
+
 const swatchColors = document.querySelectorAll('.swatch-color');
 const saveSwatchBtn = document.getElementById('saveSwatchBtn');
 const savedSwatch = document.getElementById('savedSwatch');
 const savedSwatchImg = document.getElementById('savedSwatchImg');
+
 const selectedAreas = document.getElementById('selectedAreas');
 const selectedColors = document.getElementById('selectedColors');
 
-// State
+// =========================
+// STATE
+// =========================
 let selectionEnabled = false;
 let colorPickerEnabled = false;
 let activeSwatchIndex = null;
-const originalColors = Array.from(swatchColors).map(color => color.style.backgroundColor);
 
-// Event Listeners
+// =========================
+// DELETE WRAPPER HELPER
+// =========================
+function makeDeletable(element) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'deletable-item';
+
+    const del = document.createElement('button');
+    del.className = 'delete-btn';
+    del.textContent = '×';
+
+    del.onclick = (e) => {
+        e.stopPropagation();
+        wrapper.remove();
+    };
+
+    wrapper.appendChild(element);
+    wrapper.appendChild(del);
+    return wrapper;
+}
+
+// =========================
+// SWATCH CLICK
+// =========================
 swatchColors.forEach(color => {
-    color.addEventListener('click', handleSwatchClick);
+    color.addEventListener('click', e => {
+        e.stopPropagation();
+
+        if (activeSwatchIndex === +color.dataset.index) {
+            color.classList.remove('active');
+            activeSwatchIndex = null;
+            imageContainer.classList.remove('swatch-active');
+            return;
+        }
+
+        swatchColors.forEach(c => c.classList.remove('active'));
+        color.classList.add('active');
+        activeSwatchIndex = +color.dataset.index;
+
+        disableModes();
+        imageContainer.classList.add('swatch-active');
+    });
 });
 
-toggleSelectionBtn.addEventListener('click', toggleSelection);
-toggleColorPickerBtn.addEventListener('click', toggleColorPicker);
-saveSwatchBtn.addEventListener('click', saveSwatchAsImage);
-imageContainer.addEventListener('mousemove', updateSelectionBox);
-imageContainer.addEventListener('click', handleImageClick);
-document.addEventListener('click', handleDocumentClick);
+// =========================
+// BUTTONS
+// =========================
+toggleSelectionBtn.onclick = () => {
+    disableModes();
+    selectionEnabled = !selectionEnabled;
 
-// Functions
-function handleSwatchClick(e) {
-    e.stopPropagation();
-    
-    if (selectionEnabled) toggleSelection();
-    if (colorPickerEnabled) toggleColorPicker();
-    
-    const clickedIndex = parseInt(e.target.dataset.index);
-    if (activeSwatchIndex === clickedIndex) {
-        e.target.classList.remove('active');
-        activeSwatchIndex = null;
-        imageContainer.style.cursor = 'default';
-        return;
-    }
-    
-    swatchColors.forEach(color => color.classList.remove('active'));
-    e.target.classList.add('active');
-    activeSwatchIndex = clickedIndex;
-    
-    imageContainer.style.cursor = 'none';
-    setTimeout(() => {
-        imageContainer.style.cursor = 'url("images/color-dropper.png") 0 24, crosshair';
-    }, 50);
-    
+    selectionBox.style.display = selectionEnabled ? 'block' : 'none';
+    toggleSelectionBtn.classList.toggle('mode-active', selectionEnabled);
+};
+
+toggleColorPickerBtn.onclick = () => {
+    disableModes();
+    colorPickerEnabled = !colorPickerEnabled;
+
+    toggleColorPickerBtn.classList.toggle('mode-active', colorPickerEnabled);
+    imageContainer.classList.toggle('color-picker-cursor', colorPickerEnabled);
+};
+
+function disableModes() {
+    selectionEnabled = false;
+    colorPickerEnabled = false;
+
+    selectionBox.style.display = 'none';
     toggleSelectionBtn.classList.remove('mode-active');
     toggleColorPickerBtn.classList.remove('mode-active');
+    imageContainer.classList.remove('color-picker-cursor');
 }
 
-function handleDocumentClick(e) {
-    if (!e.target.closest('.swatch-color') && !e.target.closest('#imageContainer') && activeSwatchIndex !== null) {
-        swatchColors[activeSwatchIndex].classList.remove('active');
-        activeSwatchIndex = null;
-        imageContainer.style.cursor = 'default';
-    }
-}
-
-function toggleSelection() {
-    if (activeSwatchIndex !== null) {
-        swatchColors[activeSwatchIndex].classList.remove('active');
-        activeSwatchIndex = null;
-        imageContainer.style.cursor = 'default';
-    }
-    
-    if (colorPickerEnabled) toggleColorPicker();
-    
-    selectionEnabled = !selectionEnabled;
-    
-    if (selectionEnabled) {
-        selectionBox.style.display = 'block';
-        toggleSelectionBtn.textContent = 'Disable Selection';
-        toggleSelectionBtn.classList.add('mode-active');
-        toggleColorPickerBtn.textContent = 'Enable Color Picker';
-        toggleColorPickerBtn.classList.remove('mode-active');
-        imageContainer.style.cursor = 'crosshair';
-    } else {
-        selectionBox.style.display = 'none';
-        toggleSelectionBtn.textContent = 'Enable Selection';
-        toggleSelectionBtn.classList.remove('mode-active');
-        imageContainer.style.cursor = 'default';
-    }
-}
-
-function toggleColorPicker() {
-    if (activeSwatchIndex !== null) {
-        swatchColors[activeSwatchIndex].classList.remove('active');
-        activeSwatchIndex = null;
-        imageContainer.style.cursor = 'default';
-    }
-    
-    if (selectionEnabled) toggleSelection();
-    
-    colorPickerEnabled = !colorPickerEnabled;
-    
-    if (colorPickerEnabled) {
-        toggleColorPickerBtn.textContent = 'Disable Color Picker';
-        toggleColorPickerBtn.classList.add('mode-active');
-        toggleSelectionBtn.textContent = 'Enable Selection';
-        toggleSelectionBtn.classList.remove('mode-active');
-        imageContainer.style.cursor = 'none';
-        setTimeout(() => {
-            imageContainer.style.cursor = 'url("images/color-dropper.png") 0 24, crosshair';
-        }, 50);
-    } else {
-        toggleColorPickerBtn.textContent = 'Enable Color Picker';
-        toggleColorPickerBtn.classList.remove('mode-active');
-        imageContainer.style.cursor = 'default';
-    }
-}
-
-function updateSelectionBox(e) {
+// =========================
+// IMAGE EVENTS
+// =========================
+imageContainer.addEventListener('mousemove', e => {
     if (!selectionEnabled) return;
-    
-    const rect = image.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
-        selectionBox.style.left = `${x}px`;
-        selectionBox.style.top = `${y}px`;
-    }
-}
 
-function handleImageClick(e) {
+    const rect = image.getBoundingClientRect();
+    selectionBox.style.left = `${e.clientX - rect.left}px`;
+    selectionBox.style.top = `${e.clientY - rect.top}px`;
+});
+
+imageContainer.addEventListener('click', e => {
     const rect = image.getBoundingClientRect();
     const scaleX = image.naturalWidth / rect.width;
     const scaleY = image.naturalHeight / rect.height;
-    
+
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
-    
-    if (selectionEnabled) {
-        saveSelectedArea(x, y);
-    } 
-    else if (colorPickerEnabled) {
-        pickColor(x, y);
-    }
-    else if (activeSwatchIndex !== null) {
-        const color = getColorAtPosition(x, y);
-        swatchColors[activeSwatchIndex].style.backgroundColor = color;
-    }
-}
 
+    if (selectionEnabled) saveSelectedArea(x, y);
+    else if (colorPickerEnabled) pickColor(x, y);
+    else if (activeSwatchIndex !== null) {
+        swatchColors[activeSwatchIndex].style.backgroundColor = getPixelColor(x, y);
+    }
+});
+
+// =========================
+// SAVE SELECTED AREA
+// =========================
 function saveSelectedArea(x, y) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
     const size = 50;
-    
-    canvas.width = size;
-    canvas.height = size;
-    ctx.drawImage(image, x - size/2, y - size/2, size, size, 0, 0, size, size);
-    
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+
+    canvas.getContext('2d').drawImage(
+        image,
+        x - size / 2, y - size / 2, size, size,
+        0, 0, size, size
+    );
+
     const img = new Image();
     img.src = canvas.toDataURL();
-    img.classList.add('selected-area');
-    selectedAreas.appendChild(img);
+    img.className = 'selected-area';
+
+    selectedAreas.appendChild(makeDeletable(img));
 }
 
+// =========================
+// PICK COLOR
+// =========================
 function pickColor(x, y) {
-    const color = getColorAtPosition(x, y);
-    
-    const colorBox = document.createElement('div');
-    colorBox.className = 'color-box';
-    colorBox.style.backgroundColor = color;
-    selectedColors.appendChild(colorBox);
+    const color = getPixelColor(x, y);
+
+    const box = document.createElement('div');
+    box.className = 'color-box';
+    box.style.backgroundColor = color;
+
+    selectedColors.appendChild(makeDeletable(box));
 }
 
-function getColorAtPosition(x, y) {
+// =========================
+// GET PIXEL COLOR
+// =========================
+function getPixelColor(x, y) {
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
     canvas.width = image.naturalWidth;
     canvas.height = image.naturalHeight;
+
+    const ctx = canvas.getContext('2d');
     ctx.drawImage(image, 0, 0);
-    
+
     const pixel = ctx.getImageData(x, y, 1, 1).data;
     return `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 }
 
-function saveSwatchAsImage() {
+// =========================
+// SAVE SWATCH AS IMAGE
+// =========================
+saveSwatchBtn.onclick = () => {
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
     canvas.width = 48;
     canvas.height = 32;
-    const colorWidth = canvas.width / swatchColors.length;
-    
-    swatchColors.forEach((color, i) => {
-        ctx.fillStyle = color.style.backgroundColor;
-        ctx.fillRect(i * colorWidth, 0, colorWidth, canvas.height);
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width / swatchColors.length;
+
+    swatchColors.forEach((c, i) => {
+        ctx.fillStyle = c.style.backgroundColor;
+        ctx.fillRect(i * w, 0, w, canvas.height);
     });
-    
+
     savedSwatchImg.src = canvas.toDataURL();
     savedSwatch.style.display = 'block';
-}
+
+    const wrapper = makeDeletable(savedSwatchImg.cloneNode());
+    savedSwatch.innerHTML = '';
+    savedSwatch.appendChild(wrapper);
+};
