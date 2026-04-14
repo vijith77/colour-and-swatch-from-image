@@ -106,3 +106,32 @@ button {
 .swatch-active {
     cursor: url('../images/color-dropper.png') 0 24, crosshair;
 }
+/* =========================
+   DELETE ON HOVER
+   ========================= */
+
+.deletable-item {
+    position: relative;
+    display: inline-block;
+}
+
+.delete-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    line-height: 16px;
+    padding: 0;
+}
+
+.deletable-item:hover .delete-btn {
+    display: block;
+}
