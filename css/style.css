@@ -5,6 +5,10 @@ body {
 h2{
     font-size:14px;
 }
+.header{
+    height: 44px;
+    border-bottom: 1px solid #ccc;
+}
 .wrapper {
     display: flex;
     gap: 20px;
